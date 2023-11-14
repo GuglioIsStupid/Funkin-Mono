@@ -1,0 +1,5 @@
+bin/
+.vscode/
+.config/
+Content/bin/
+Content/obj/

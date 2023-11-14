@@ -1,0 +1,111 @@
+
+#----------------------------- Global Properties ----------------------------#
+
+/outputDir:bin/$(Platform)
+/intermediateDir:obj/$(Platform)
+/platform:DesktopGL
+/config:
+/profile:Reach
+/compress:False
+
+#-------------------------------- References --------------------------------#
+
+
+#---------------------------------- Content ---------------------------------#
+
+#begin images/menu/gfDanceTitle.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/menu/gfDanceTitle.png
+
+#begin images/menu/gfDanceTitle.xml
+/copy:images/menu/gfDanceTitle.xml
+
+#begin images/menu/logoBumpin.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/menu/logoBumpin.png
+
+#begin images/menu/logoBumpin.xml
+/copy:images/menu/logoBumpin.xml
+
+#begin images/menu/mainmenu/menu_story_mode.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/menu/mainmenu/menu_story_mode.png
+
+#begin images/menu/mainmenu/menu_story_mode.xml
+/copy:images/menu/mainmenu/menu_story_mode.xml
+
+#begin images/menu/menuBG.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/menu/menuBG.png
+
+#begin images/menu/menuDesat.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/menu/menuDesat.png
+
+#begin images/NOTE_assets.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/NOTE_assets.png
+
+#begin images/NOTE_assets.xml
+/copy:images/NOTE_assets.xml
+
+#begin Testing/F-1ZDS5WYAAu4vu.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Testing/F-1ZDS5WYAAu4vu.jpg;Testing/TestImg.jpg
+
