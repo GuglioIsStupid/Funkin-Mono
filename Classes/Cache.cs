@@ -2,9 +2,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
-using FNFMono;
 
-namespace FNFmono.Classes;
+namespace FNFMono.Classes;
 
 public class Cache {
     private Game1 game;

@@ -13,6 +13,9 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin data/test/test.json
+/copy:data/test/test.json
+
 #begin images/menu/gfDanceTitle.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -96,6 +99,18 @@
 
 #begin images/NOTE_assets.xml
 /copy:images/NOTE_assets.xml
+
+#begin songs/test/Inst.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:songs/test/Inst.ogg
+
+#begin songs/test/Voices.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:songs/test/Voices.ogg
 
 #begin Testing/F-1ZDS5WYAAu4vu.jpg
 /importer:TextureImporter

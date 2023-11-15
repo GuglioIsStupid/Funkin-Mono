@@ -1,5 +1,4 @@
-﻿using FNFmono.Classes;
-using FNFMono.Classes;
+﻿using FNFMono.Classes;
 using FNFMono.States;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -18,6 +17,7 @@ public class Game1 : Game
     private State _nextState;
 
     public Cache Cache;
+    public AudioManager Audio;
 
     public void ChangeState(State state)
     {
@@ -38,6 +38,7 @@ public class Game1 : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
         Cache = new Cache(this);
+        Audio = new AudioManager(this);
     }
 
     protected override void Initialize()
