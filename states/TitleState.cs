@@ -42,8 +42,6 @@ public class TitleState : State {
     public override void Update(GameTime gameTime)
     {
         SuperUpdate(gameTime);
-       /*  _girlfriendTitle.Update(gameTime);
-        _logoBumpin.Update(gameTime); */
 
         // if enter is pressed, go to the menu state
         if (Input.IsPressed(Keys.Enter))
@@ -55,7 +53,5 @@ public class TitleState : State {
     public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         SuperDraw(gameTime, spriteBatch);
-        /* _girlfriendTitle.Draw(spriteBatch);
-        _logoBumpin.Draw(spriteBatch); */
     }
 }

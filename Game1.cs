@@ -73,7 +73,6 @@ public class Game1 : Game
         // TODO: Add your update logic here
         if (_nextState != null)
         {
-            _currentState.UnloadContent();
             _currentState = _nextState;
             _currentState.LoadContent();
             _nextState = null;

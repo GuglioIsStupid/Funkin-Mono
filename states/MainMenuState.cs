@@ -19,6 +19,10 @@ public class MainMenuState : State {
         _bgMagenta = new Sprite(0, 0, "images/menu/menuDesat");
         _bg = new Sprite(0, 0, "images/menu/menuBG");
         _storyButton = new Sprite(0, 0, "images/menu/mainmenu/menu_story_mode");
+
+        Add(_bgMagenta);
+        Add(_bg);
+        Add(_storyButton);
     }
 
     public override void LoadContent()
@@ -44,9 +48,6 @@ public class MainMenuState : State {
     public override void Update(GameTime gameTime)
     {
         SuperUpdate(gameTime);
-        _bgMagenta.Update(gameTime);
-        _bg.Update(gameTime);
-        _storyButton.Update(gameTime);
 
         // if enter is pressed, go to the menu state
         if (Input.IsPressed(Keys.Enter))
@@ -58,8 +59,5 @@ public class MainMenuState : State {
     public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         SuperDraw(gameTime, spriteBatch);
-        _bgMagenta.Draw(spriteBatch);
-        _bg.Draw(spriteBatch);
-        _storyButton.Draw(spriteBatch);
     }
 }

@@ -78,6 +78,13 @@ public class Sprite {
             frame.Y = Convert.ToInt32(subTexture.Attributes["y"].Value);
             frame.Width = Convert.ToInt32(subTexture.Attributes["width"].Value);
             frame.Height = Convert.ToInt32(subTexture.Attributes["height"].Value);
+            frame.RealWidth = Convert.ToInt32(subTexture.Attributes["width"].Value);
+            frame.RealHeight = Convert.ToInt32(subTexture.Attributes["height"].Value);
+
+            if (subTexture.Attributes["frameWidth"] != null)
+                frame.RealWidth = Convert.ToInt32(subTexture.Attributes["frameWidth"].Value);
+            if (subTexture.Attributes["frameHeight"] != null)
+
 
             frame.OffsetX = 0;
             frame.OffsetY = 0;
@@ -87,8 +94,6 @@ public class Sprite {
                 frame.OffsetY = Convert.ToInt32(subTexture.Attributes["frameY"].Value);
             Frames.Add(frame);
         }
-
-        CenterOrigin();
     }
 
     public void AddAnimationFromPrefix(string name, string prefix, int frameRate=30, bool loop=true) {
@@ -112,6 +117,7 @@ public class Sprite {
         if (this.Animations != null) {
             foreach (Animation anim in this.Animations) {
                 if (anim.Name == name) {
+                    this.frameIndex = 0;
                     this.CurAnimation = anim;
                     this.isAnimating = true;
                 }
@@ -123,10 +129,10 @@ public class Sprite {
     public void SetGraphicSize(dynamic width=null, dynamic height=null) {
         if (width == null) width = 0;
         if (height == null) height = 0;
-
+        
         Scale = new Vector2(
-            (float)width / (float)GetFrameWidth(),
-            (float)height / (float)GetFrameHeight()
+            (float)width / GetFrameWidth(),
+            (float)height / GetFrameHeight()
         );
 
         if (width <= 0)
@@ -137,16 +143,16 @@ public class Sprite {
 
     public int GetFrameWidth() {
         if (this.CurAnimation != null)
-            return this.CurAnimation.Frames[(int)this.frameIndex].Width;
+            return this.CurAnimation.Frames[(int)this.frameIndex].RealWidth;
         else
-            return 0;
+            return this.Width;
     }
 
     public int GetFrameHeight() {
         if (this.CurAnimation != null)
-            return this.CurAnimation.Frames[(int)this.frameIndex].Height;
+            return this.CurAnimation.Frames[(int)this.frameIndex].RealHeight;
         else
-            return 0;
+            return this.Height;
     }
 
     public void UpdateHitbox() {
@@ -235,21 +241,33 @@ public class Sprite {
         spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, null);
 
         // only spriteeffect is so if the SourceRect is larger than the texture, it will still draw correctly
-        Vector2 _newPosition = new Vector2(0, 0);
-        _newPosition += Position + Origin - Offset;
-        // if sprite is not animating, draw the whole texture
-        if (isAnimating)
-            _newPosition += new Vector2(-this.CurAnimation.Frames[(int)this.frameIndex].OffsetX, -this.CurAnimation.Frames[(int)this.frameIndex].OffsetY);
+        int _x = (int)Position.X;
+        int _y = (int)Position.Y;
+        int _ox = (int)Origin.X;
+        int _oy = (int)Origin.Y;
+        int _sx = (int)Scale.X;
+        int _sy = (int)Scale.Y;
 
-        if (camera != null)
-            _newPosition -= camera.Position * ScrollFactor;
+        _x += _ox - (int)Offset.X;
+        _y += _oy - (int)Offset.Y;
+
+        // if sprite is not animating, draw the whole texture
+        if (isAnimating) {
+            _x += (int)-this.CurAnimation.Frames[(int)this.frameIndex].OffsetX;
+            _y += (int)-this.CurAnimation.Frames[(int)this.frameIndex].OffsetY;
+        }
+            
+        if (camera != null) {
+            _x -= (int)camera.Position.X * (int)ScrollFactor.X;
+            _y -= (int)camera.Position.Y * (int)ScrollFactor.Y;
+        }
 
         spriteBatch.Draw(Texture,
-                        _newPosition,
+                        new Vector2(_x, _y),
                         SourceRect,
                         Color * Alpha,
                         MathHelper.ToRadians(angle),
-                        origin,
+                        new Vector2(_ox, _oy),
                         Scale,
                         SpriteEffects.None,
                         0.0f);

@@ -37,6 +37,8 @@ public class Group {
             // if Update function exists
             if (member.GetType().GetMethod("Update") != null)
                 member.Update(gameTime);
+            else if (member.GetType().GetMethod("SuperUpdate") != null)
+                member.SuperUpdate(gameTime);
         }
     }
 
@@ -45,6 +47,12 @@ public class Group {
             // if Draw function exists
             if (member.GetType().GetMethod("Draw") != null)
                 member.Draw(spriteBatch);
+            else if (member.GetType().GetMethod("SuperDraw") != null)
+                member.SuperDraw(gameTime, spriteBatch);
         }
+    }
+
+    public dynamic Get(int index) {
+        return Members[index];
     }
 }

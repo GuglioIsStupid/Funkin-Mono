@@ -12,6 +12,8 @@ public class Frame {
     public int Y;
     public int Width;
     public int Height;
+    public int RealWidth;
+    public int RealHeight;
     public int OffsetX;
     public int OffsetY;
 }
