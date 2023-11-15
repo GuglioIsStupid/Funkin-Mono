@@ -12,6 +12,7 @@ using FNFMono.States;
 using System.Runtime.InteropServices;
 using FNFMono.Objects;
 using FNFMono;
+using System.Diagnostics;
 
 class EventNote {
     public float strumTime;
@@ -88,7 +89,8 @@ class Note : Sprite {
         this.prevNote = prevNote;
         isSustainNote = sustainNote;
         
-        Position.X += 100;
+        Position.X += 50;
+        Position.X += noteData * swagWidth;
         Position.Y -= 2000;
         this.strumTime = strumTime;
         this.noteData = noteData;
@@ -111,8 +113,6 @@ class Note : Sprite {
         SetGraphicSize(Width*0.7f);
         UpdateHitbox();
 
-        Position.X += swagWidth * noteData;
-
         switch (noteData) {
             case 0:
                 PlayAnimation("purpleScroll");
@@ -127,6 +127,10 @@ class Note : Sprite {
                 PlayAnimation("redScroll");
                 break;
         }
+        Position.X += 50;
+
+        CenterOffsets();
+        CenterOrigin();
     }
 
     public override void Update(GameTime gameTime)
@@ -135,15 +139,15 @@ class Note : Sprite {
 
         if (mustPress)
         {
-            canBeHit = (strumTime > Conductor.songPosition - (Conductor.safeZoneOffset * lateHitMult) &&
-                        strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * earlyHitMult));
+            canBeHit = (strumTime > (Conductor.songPosition-450) - (Conductor.safeZoneOffset * lateHitMult) &&
+                        strumTime < (Conductor.songPosition-450) + (Conductor.safeZoneOffset * earlyHitMult));
 
-            if (strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * earlyHitMult))
+            if (strumTime < (Conductor.songPosition-450) + (Conductor.safeZoneOffset * earlyHitMult))
                 tooLate = true;
         } else {
             canBeHit = false;
 
-            if (strumTime <= Conductor.songPosition)
+            if (strumTime <= (Conductor.songPosition-450))
                 wasGoodHit = true;
         }
             
@@ -152,16 +156,4 @@ class Note : Sprite {
             Alpha = 0.3f;
         }        
     }
-
-    public void FollowStrumNote(StrumNote strum, float fakeCrochet, float songSpeed) {
-        float strumY = strum.Position.Y;
-        float angleDir = strum.direction * (float)Math.PI / 180;
-
-        distance = (0.45f * (Conductor.songPosition - strumTime) * songSpeed * multSpeed);
-
-        if (copyY) {
-            Position.Y = strumY + offsetY + correctionOffset + (float)Math.Sin(angleDir) * distance;
-        }
-    }
-
 }

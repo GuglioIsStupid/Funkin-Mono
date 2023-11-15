@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using FNFmono.Classes;
+using System.Reflection.Metadata;
 
 namespace FNFMono.States;
 
@@ -31,6 +32,7 @@ public class PlayState : State {
 
     private Keys[] inputList = { Keys.D, Keys.F, Keys.J, Keys.K };
     private float spawnTime = 2000;
+    private bool generatedMusic = false;
     public PlayState(Game1 game, GraphicsDevice graphicsDevice, ContentManager content) : base(game, graphicsDevice, content)
     {
         _playerStrums = new Group();
@@ -58,16 +60,17 @@ public class PlayState : State {
         Add(_strumGroup);
 
         SONG = NSong.LoadFromJson("test");
-        GenerateSong();
 
-        // play music Paths.inst(SONG.song)
-        //_game.Audio.PlayMusic(SONG.song.ToLower() + "/Inst.ogg", 1.0f, false);
         Inst = _game.Content.Load<Song>("songs/" + SONG.song.ToLower() + "/Inst");
         MediaPlayer.Volume = 1.0f;
         MediaPlayer.IsRepeating = false;
         Vocals = _game.Content.Load<SoundEffect>("songs/" + SONG.song.ToLower() + "/Voices");
+
+        GenerateSong();
+
         MediaPlayer.Play(Inst);
         Vocals.Play();
+
     }
 
     public void GenerateSong() {
@@ -98,7 +101,7 @@ public class PlayState : State {
                 if (unspawnNotes.Count > 0)
                     oldNote = unspawnNotes[0];
 
-                Note swagNote = new Note(daStrumTime, daNoteData, oldNote, false, false, null, _game);
+                Note swagNote = new Note(daStrumTime, daNoteData%4, oldNote, false, false, null, _game);
                 swagNote.sustainLength = songNotes[2].GetSingle();
                 //swagNote.altNote = songNotes[3];
                 swagNote.ScrollFactor = Vector2.Zero;
@@ -106,13 +109,14 @@ public class PlayState : State {
 
                 unspawnNotes.Add(swagNote);
 
-                if (swagNote.mustPress)
-                    swagNote.Position.X += 1280/2;
+                if (swagNote.mustPress) swagNote.Position.X += 1280 / 2;
             }
         }
 
         // sort unspawnNotes by strumTime
         unspawnNotes = unspawnNotes.OrderBy(o => o.strumTime).ToList();
+
+        generatedMusic = true;
     }
 
     public override void UnloadContent()
@@ -146,13 +150,21 @@ public class PlayState : State {
                 strum.PlayAnim("static");
             }
         }
-
-        Conductor.songPosition += 1000 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+        if (generatedMusic) Conductor.songPosition += 1000 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         float fakeCrochet = (60 / SONG.bpm) * 1000;
-        foreach(Note note in unspawnNotes) {
-            StrumNote strum = _strumGroup.Get(note.noteData);
-            note.FollowStrumNote(strum, fakeCrochet, SONG.speed);
+        foreach(Note note in notes.Members) {
+            
+            note.Position.Y = 42 - ((Conductor.songPosition-450) - note.strumTime) * (0.45f * SONG.speed);
+            //Debug.WriteLine("note.Position.Y: " + note.Position.Y);
+            // if past safe zone, remove note
+            if (note.strumTime - (Conductor.songPosition-450) < -Conductor.safeZoneOffset * 2) {
+                notes.Remove(note);
+                StrumNote strum = null;
+                if (note.mustPress) strum = _playerStrums.Get(note.noteData);
+                else strum = _enemyStrums.Get(note.noteData);
+                break;
+            }
         }
 
         //Debug.WriteLine("Conductor.songPosition: " + Conductor.songPosition);
@@ -162,7 +174,7 @@ public class PlayState : State {
             if (SONG.speed < 1) time /= SONG.speed;
             if (unspawnNotes[0].multSpeed < 1) time /= unspawnNotes[0].multSpeed;
 
-            while (unspawnNotes.Count > 0 && unspawnNotes[0].strumTime - Conductor.songPosition < time) {
+            while (unspawnNotes.Count > 0 && unspawnNotes[0].strumTime - (Conductor.songPosition-450) < time) {
                 Note note = unspawnNotes[0];
                 unspawnNotes.RemoveAt(0);
                 notes.Add(note);
