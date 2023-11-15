@@ -143,14 +143,14 @@ public class Sprite {
 
     public int GetFrameWidth() {
         if (this.CurAnimation != null)
-            return this.CurAnimation.Frames[(int)this.frameIndex].RealWidth;
+            return this.CurAnimation.Frames[(int)this.frameIndex].Width;
         else
             return this.Width;
     }
 
     public int GetFrameHeight() {
         if (this.CurAnimation != null)
-            return this.CurAnimation.Frames[(int)this.frameIndex].RealHeight;
+            return this.CurAnimation.Frames[(int)this.frameIndex].Height;
         else
             return this.Height;
     }
@@ -172,15 +172,15 @@ public class Sprite {
 
     public void CenterOrigin() {
         this.Origin = new Vector2(
-            (int)(0.5 * GetFrameWidth()),
-            (int)(0.5 * GetFrameHeight())
+            (int)(0.5 * Width),
+            (int)(0.5 * Height)
         );
     }
 
     public void CenterOffsets() {
         this.Offset = new Vector2(
-            (int)(-0.5 * GetFrameWidth()),
-            (int)(-0.5 * GetFrameHeight())
+            (int)(-0.5 * Width),
+            (int)(-0.5 * Height)
         );
     }
 
@@ -248,13 +248,13 @@ public class Sprite {
         int _sx = (int)Scale.X;
         int _sy = (int)Scale.Y;
 
-        _x += _ox - (int)Offset.X;
-        _y += _oy - (int)Offset.Y;
+        _x += _ox - ((int)Offset.X);
+        _y += _oy - ((int)Offset.Y);
 
         // if sprite is not animating, draw the whole texture
         if (isAnimating) {
-            _x += (int)-this.CurAnimation.Frames[(int)this.frameIndex].OffsetX;
-            _y += (int)-this.CurAnimation.Frames[(int)this.frameIndex].OffsetY;
+            _ox += (int)this.CurAnimation.Frames[(int)this.frameIndex].OffsetX;
+            _oy += (int)this.CurAnimation.Frames[(int)this.frameIndex].OffsetY;
         }
             
         if (camera != null) {

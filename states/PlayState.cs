@@ -25,11 +25,11 @@ public class PlayState : State {
     {
         for (int i = 0; i < 4; i++)
         {
-            StrumNote strum = new StrumNote(-100, -100, i, 1, _game);
+            StrumNote strum = new StrumNote(50, 42, i, 1, _game);
             _playerStrums.Add(strum);
             strum.PostAddedToGroup();
 
-            StrumNote strum2 = new StrumNote(-100, -100, i, 0, _game);
+            StrumNote strum2 = new StrumNote(50, 42, i, 0, _game);
             _enemyStrums.Add(strum2);
             strum2.PostAddedToGroup();
         }
