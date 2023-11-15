@@ -89,7 +89,7 @@ class Note : Sprite {
         this.prevNote = prevNote;
         isSustainNote = sustainNote;
         
-        Position.X += 50;
+        Position.X += 75;
         Position.X += noteData * swagWidth;
         Position.Y -= 2000;
         this.strumTime = strumTime;

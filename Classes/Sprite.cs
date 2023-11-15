@@ -7,6 +7,16 @@ using FNFMono.Classes.AnimationNS;
 using System.Xml;
 using System;
 using FNFmono.Classes;
+using System.Linq;
+using System.Reflection.Metadata;
+using FNFMono.Classes;
+using FNFMono.Objects;
+// audio
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
+using System.Diagnostics;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace FNFMono.Classes;
 
@@ -17,10 +27,6 @@ public class Sprite {
     public Rectangle SourceRect;
     public bool IsActive;
     public Texture2D Texture;
-
-    Vector2 origin;
-    RenderTarget2D renderTarget;
-    //SpriteFont font;
     
     public int angle;
 
@@ -42,6 +48,9 @@ public class Sprite {
 
     public Camera camera;
     public Vector2 ScrollFactor = new Vector2(1, 1);
+
+    public bool exists = true;
+    public bool visible = true;
 
     public Sprite(int x, int y, string path="") {
         Path = path;
@@ -70,28 +79,39 @@ public class Sprite {
         spriteSheet.Load(xmlPath);
         XmlElement root = spriteSheet.DocumentElement;
         XmlNodeList subTextures = root.SelectNodes("SubTexture");
-            
+        
         foreach (XmlNode subTexture in subTextures) {
             Frame frame = new Frame();
             frame.Name = subTexture.Attributes["name"].Value;
-            frame.X = Convert.ToInt32(subTexture.Attributes["x"].Value);
+            /* frame.X = Convert.ToInt32(subTexture.Attributes["x"].Value);
             frame.Y = Convert.ToInt32(subTexture.Attributes["y"].Value);
             frame.Width = Convert.ToInt32(subTexture.Attributes["width"].Value);
             frame.Height = Convert.ToInt32(subTexture.Attributes["height"].Value);
             frame.RealWidth = Convert.ToInt32(subTexture.Attributes["width"].Value);
-            frame.RealHeight = Convert.ToInt32(subTexture.Attributes["height"].Value);
+            frame.RealHeight = Convert.ToInt32(subTexture.Attributes["height"].Value); */
+            int x = Convert.ToInt32(subTexture.Attributes["x"].Value);
+            int y = Convert.ToInt32(subTexture.Attributes["y"].Value);
+            int width = Convert.ToInt32(subTexture.Attributes["width"].Value);
+            int height = Convert.ToInt32(subTexture.Attributes["height"].Value);
 
-            if (subTexture.Attributes["frameWidth"] != null)
-                frame.RealWidth = Convert.ToInt32(subTexture.Attributes["frameWidth"].Value);
-            if (subTexture.Attributes["frameHeight"] != null)
+            int offsetWidth = (subTexture.Attributes["frameWidth"] != null) ? Convert.ToInt32(subTexture.Attributes["frameWidth"].Value) : 0;
+            int offsetHeight = (subTexture.Attributes["frameHeight"] != null) ? Convert.ToInt32(subTexture.Attributes["frameHeight"].Value) : 0;
+            int offsetX = (subTexture.Attributes["frameX"] != null) ? Convert.ToInt32(subTexture.Attributes["frameX"].Value) : 0;
+            int offsetY = (subTexture.Attributes["frameY"] != null) ? Convert.ToInt32(subTexture.Attributes["frameY"].Value) : 0;
 
+            frame.X = x;
+            frame.Y = y;
+            //aw > sw and w - (aw - sw) or w
+            frame.Width = width;
+            //ah > sh and h - (ah - sh) or h
+            frame.Height = height;
+            frame.OffsetX = offsetX;
+            frame.OffsetY = offsetY;
+            frame.RealWidth = width;
+            frame.RealHeight = height;
 
-            frame.OffsetX = 0;
-            frame.OffsetY = 0;
-            if (subTexture.Attributes["frameX"] != null)
-                frame.OffsetX = Convert.ToInt32(subTexture.Attributes["frameX"].Value);
-            if (subTexture.Attributes["frameY"] != null)
-                frame.OffsetY = Convert.ToInt32(subTexture.Attributes["frameY"].Value);
+            //Debug.WriteLine(frame.Name + " " + frame.X + " " + frame.Y + " " + frame.Width + " " + frame.Height + " " + frame.RealWidth + " " + frame.RealHeight);
+
             Frames.Add(frame);
         }
     }
@@ -113,13 +133,17 @@ public class Sprite {
             this.Frames = new List<Frame>();
     }
 
-    public void PlayAnimation(string name) {
+    public void PlayAnimation(string name, bool force=false) {
+        if (this.CurAnimation != null && this.CurAnimation.Name == name && !force)
+            return;
         if (this.Animations != null) {
             foreach (Animation anim in this.Animations) {
                 if (anim.Name == name) {
-                    this.frameIndex = 0;
                     this.CurAnimation = anim;
+                    this.frameIndex = 0;
                     this.isAnimating = true;
+                    // UPDATE DRAW!
+                    this.Draw(null);
                 }
             }
         }
@@ -129,28 +153,25 @@ public class Sprite {
     public void SetGraphicSize(dynamic width=null, dynamic height=null) {
         if (width == null) width = 0;
         if (height == null) height = 0;
-        
-        Scale = new Vector2(
-            (float)width / GetFrameWidth(),
-            (float)height / GetFrameHeight()
-        );
+
+        Scale = new Vector2((float)width / (float)Width, (float)height / (float)Height);
 
         if (width <= 0)
             Scale.X = Scale.Y;
-        if (height <= 0)
+        else if (height <= 0)
             Scale.Y = Scale.X;
     }
 
     public int GetFrameWidth() {
         if (this.CurAnimation != null)
-            return this.CurAnimation.Frames[(int)this.frameIndex].Width;
+            return this.CurAnimation.Frames[(int)this.frameIndex].RealWidth;
         else
             return this.Width;
     }
 
     public int GetFrameHeight() {
         if (this.CurAnimation != null)
-            return this.CurAnimation.Frames[(int)this.frameIndex].Height;
+            return this.CurAnimation.Frames[(int)this.frameIndex].RealHeight;
         else
             return this.Height;
     }
@@ -159,12 +180,12 @@ public class Sprite {
         int w = GetFrameWidth();
         int h = GetFrameHeight();
 
-        Width = (int)Math.Abs(this.Scale.X) * w;
-        Height = (int)Math.Abs(this.Scale.Y) * h;
+        Width = (int)Math.Abs(Scale.X) * w;
+        Height = (int)Math.Abs(Scale.Y) * h;
 
-        this.Offset = new Vector2(
-            (int)(-0.5 * (Width-w)),
-            (int)(-0.5 * (Height-h))
+        Offset = new Vector2(
+            (int)(-0.5 * (Width - w)),
+            (int)(-0.5 * (Height - h))
         );
 
         CenterOrigin();
@@ -172,16 +193,21 @@ public class Sprite {
 
     public void CenterOrigin() {
         this.Origin = new Vector2(
-            (int)(0.5 * Width),
-            (int)(0.5 * Height)
+            (int)(GetFrameWidth() * 0.5),
+            (int)(GetFrameHeight() * 0.5)
         );
     }
 
     public void CenterOffsets() {
         this.Offset = new Vector2(
-            (int)(-0.5 * Width),
-            (int)(-0.5 * Height)
+            (int)((GetFrameWidth() - Width) * 0.5),
+            (int)((GetFrameHeight() - Height) * 0.5)
         );
+    }
+
+    public void Destroy() {
+        exists = false;
+        visible = false;
     }
 
     public void LoadContent(Game1 game, string path = "") {
@@ -210,8 +236,14 @@ public class Sprite {
 
     public virtual void Update(GameTime gameTime) {
         if (this.CurAnimation != null && this.isAnimating) {
-            if (this.frameIndex >= this.CurAnimation.Frames.Count)
-                this.frameIndex = 0;
+            if (this.frameIndex >= this.CurAnimation.Frames.Count) {
+                if (this.CurAnimation.Loop)
+                    this.frameIndex = 0; 
+                else {
+                    this.frameIndex = this.CurAnimation.Frames.Count - 1;
+                    this.isAnimating = false;
+                }
+            }
             
             this.frameIndex += (float)gameTime.ElapsedGameTime.TotalSeconds * this.CurAnimation.Framerate;
 
@@ -236,25 +268,38 @@ public class Sprite {
         }
     }
 
-    public void Draw(SpriteBatch spriteBatch) {
-        // set to clamp wrap mode
-        spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, null);
+    public Frame GetFrame() {
+        if (this.CurAnimation != null)
+            return this.CurAnimation.Frames[(int)this.frameIndex];
+        else
+            return null;
+    }
 
-        // only spriteeffect is so if the SourceRect is larger than the texture, it will still draw correctly
+    public void Draw(SpriteBatch spriteBatch) {
+        if (!visible || !exists)
+            return;
+        // set to clamp wrap mode
+        if (spriteBatch != null) spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, null);
+
         int _x = (int)Position.X;
         int _y = (int)Position.Y;
         int _ox = (int)Origin.X;
         int _oy = (int)Origin.Y;
         int _sx = (int)Scale.X;
         int _sy = (int)Scale.Y;
+        int _offsetX = (int)Offset.X;
+        int _offsetY = (int)Offset.Y;
 
-        _x += _ox - ((int)Offset.X);
-        _y += _oy - ((int)Offset.Y);
+        _x += _ox - _offsetX;
+        _y += _oy - _offsetY;
+
+        Frame frame = null;
+        frame = GetFrame();
 
         // if sprite is not animating, draw the whole texture
         if (isAnimating) {
-            _ox += (int)this.CurAnimation.Frames[(int)this.frameIndex].OffsetX;
-            _oy += (int)this.CurAnimation.Frames[(int)this.frameIndex].OffsetY;
+            _ox += (int)frame.OffsetX;
+            _oy += (int)frame.OffsetY;
         }
             
         if (camera != null) {
@@ -262,7 +307,7 @@ public class Sprite {
             _y -= (int)camera.Position.Y * (int)ScrollFactor.Y;
         }
 
-        spriteBatch.Draw(Texture,
+        if (spriteBatch != null) spriteBatch.Draw(Texture,
                         new Vector2(_x, _y),
                         SourceRect,
                         Color * Alpha,
@@ -271,6 +316,6 @@ public class Sprite {
                         Scale,
                         SpriteEffects.None,
                         0.0f);
-        spriteBatch.End();
+        if (spriteBatch != null) spriteBatch.End();
     }
 }

@@ -81,10 +81,11 @@ class StrumNote : Sprite {
     }
 
     public void PlayAnim(string anim, bool force=false) {
-        PlayAnimation(anim);
+        PlayAnimation(anim, force);
         if (CurAnimation != null) {
             CenterOffsets();
             CenterOrigin();
         }
+        resetAnim = 0.1f;
     }
 }

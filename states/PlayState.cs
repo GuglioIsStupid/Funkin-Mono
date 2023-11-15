@@ -42,7 +42,7 @@ public class PlayState : State {
     public override void LoadContent()
     {
         for (int i = 0; i < 4; i++) {
-            StrumNote strum = new StrumNote(50, 42, i, 0, _game);
+            StrumNote strum = new StrumNote(75, 84, i, 0, _game);
             _enemyStrums.Add(strum);
             strum.PostAddedToGroup();
 
@@ -50,7 +50,7 @@ public class PlayState : State {
         }
         for (int i = 0; i < 4; i++)
         {
-            StrumNote strum = new StrumNote(50, 42, i, 1, _game);
+            StrumNote strum = new StrumNote(75, 84, i, 1, _game);
             _playerStrums.Add(strum);
             strum.PostAddedToGroup();
             
@@ -71,6 +71,7 @@ public class PlayState : State {
         MediaPlayer.Play(Inst);
         Vocals.Play();
 
+        Debug.WriteLine("SONG.song: " + SONG.song);
     }
 
     public void GenerateSong() {
@@ -153,7 +154,7 @@ public class PlayState : State {
         if (generatedMusic) Conductor.songPosition += 1000 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         float fakeCrochet = (60 / SONG.bpm) * 1000;
-        foreach(Note note in notes.Members) {
+        /* foreach(Note note in notes.Members) {
             
             note.Position.Y = 42 - ((Conductor.songPosition-450) - note.strumTime) * (0.45f * SONG.speed);
             //Debug.WriteLine("note.Position.Y: " + note.Position.Y);
@@ -163,7 +164,19 @@ public class PlayState : State {
                 StrumNote strum = null;
                 if (note.mustPress) strum = _playerStrums.Get(note.noteData);
                 else strum = _enemyStrums.Get(note.noteData);
-                break;
+                note.Destroy();
+            }
+        } */
+
+        for (int i = 0; i < notes.Members.Count; i++) {
+            Note note = notes.Get(i);
+            note.Position.Y = 84 - ((Conductor.songPosition-450) - note.strumTime) * (0.45f * SONG.speed);
+            //Debug.WriteLine("note.Position.Y: " + note.Position.Y);
+            // if past safe zone, remove note
+            if (note.strumTime - (Conductor.songPosition-450) < -Conductor.safeZoneOffset * 2) {
+                notes.Remove(note);
+                if (!note.mustPress) _enemyStrums.Get(note.noteData).PlayAnim("confirm");
+                note.Destroy();
             }
         }
 
