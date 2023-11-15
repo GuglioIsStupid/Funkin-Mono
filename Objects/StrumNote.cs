@@ -70,7 +70,7 @@ class StrumNote : Sprite {
     // update function (allows us to subclass)
     public override void Update(GameTime gameTime) {
         if (resetAnim > 0) {
-            resetAnim -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (gameTime != null) resetAnim -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (resetAnim <= 0) {
                 PlayAnim("static");
                 resetAnim = 0;

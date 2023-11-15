@@ -143,6 +143,7 @@ public class Sprite {
                     this.frameIndex = 0;
                     this.isAnimating = true;
                     // UPDATE DRAW!
+                    this.Update(null);
                     this.Draw(null);
                 }
             }
@@ -245,7 +246,7 @@ public class Sprite {
                 }
             }
             
-            this.frameIndex += (float)gameTime.ElapsedGameTime.TotalSeconds * this.CurAnimation.Framerate;
+            if (gameTime != null) this.frameIndex += (float)gameTime.ElapsedGameTime.TotalSeconds * this.CurAnimation.Framerate;
 
             if (this.frameIndex >= this.CurAnimation.Frames.Count)
                 if (this.CurAnimation.Loop)
