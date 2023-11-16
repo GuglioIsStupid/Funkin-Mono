@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Content;
 
 namespace FNFMono.Classes;
 
-public abstract class State : Group{
+public abstract class State : Group {
     #region Fields
     protected ContentManager _content;
     protected GraphicsDevice _graphicsDevice;

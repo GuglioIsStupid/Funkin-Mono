@@ -25,6 +25,7 @@ public class Sprite {
     public string Text, FontName, Path;
     public Vector2 Position, Scale, Offset, Origin;
     public Rectangle SourceRect;
+    public Rectangle clipRect;
     public bool IsActive;
     public Texture2D Texture;
     
@@ -61,6 +62,7 @@ public class Sprite {
         Text = string.Empty;
         FontName = "Fonts/Font";
         SourceRect = Rectangle.Empty;
+        clipRect = Rectangle.Empty;
         IsActive = true;
         Width = 0;
         Height = 0;
@@ -183,6 +185,9 @@ public class Sprite {
 
         Width = (int)Math.Abs(Scale.X) * w;
         Height = (int)Math.Abs(Scale.Y) * h;
+
+        if (Width == 0)
+            Width = 1;
 
         Offset = new Vector2(
             (int)(-0.5 * (Width - w)),
@@ -307,10 +312,24 @@ public class Sprite {
             _x -= (int)camera.Position.X * (int)ScrollFactor.X;
             _y -= (int)camera.Position.Y * (int)ScrollFactor.Y;
         }
+        // use source rect (for frames) and clipRect (for clipping)
+        Rectangle rect = new Rectangle();
+        rect.X = SourceRect.X;
+        rect.Y = SourceRect.Y;
+        rect.Width = SourceRect.Width;
+        rect.Height = SourceRect.Height;
+
+        // cliprect
+        if (clipRect != Rectangle.Empty) {
+            rect.X += clipRect.X;
+            rect.Y += clipRect.Y;
+            rect.Width = clipRect.Width;
+            rect.Height = clipRect.Height;
+        }
 
         if (spriteBatch != null) spriteBatch.Draw(Texture,
                         new Vector2(_x, _y),
-                        SourceRect,
+                        rect,
                         Color * Alpha,
                         MathHelper.ToRadians(angle),
                         new Vector2(_ox, _oy),

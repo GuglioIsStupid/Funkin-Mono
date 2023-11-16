@@ -81,7 +81,7 @@ class Note : Sprite {
     public float correctionOffset = 0;
     public float angleDir = 0;
 
-    public Note(float strumTime, int noteData, Note prevNote=null, bool sustainNote=false, bool inEditor=false, dynamic createdFrom=null, Game1 _game=null) : base(0, 0, "images/NOTE_assets") {
+    public Note(float strumTime, int noteData, Note prevNote=null, bool sustainNote=false, bool inEditor=false, dynamic createdFrom=null, Game1 _game=null, float speed=1.0f) : base(0, 0, "images/NOTE_assets") {
         LoadFrames("Content/images/NOTE_assets.xml");
         LoadContent(_game);
         if (prevNote == null) prevNote = this;
@@ -95,20 +95,20 @@ class Note : Sprite {
         this.strumTime = strumTime;
         this.noteData = noteData;
 
-        AddAnimationFromPrefix("greenScroll", "green instance 1");
-        AddAnimationFromPrefix("redScroll", "red instance 1");
-        AddAnimationFromPrefix("blueScroll", "blue instance 1");
-        AddAnimationFromPrefix("purpleScroll", "purple instance 1");
+        AddAnimationFromPrefix("greenScroll", "green instance");
+        AddAnimationFromPrefix("redScroll", "red instance");
+        AddAnimationFromPrefix("blueScroll", "blue instance");
+        AddAnimationFromPrefix("purpleScroll", "purple instance");
 
         AddAnimationFromPrefix("greenholdend", "green hold end");
         AddAnimationFromPrefix("redholdend", "red hold end");
         AddAnimationFromPrefix("blueholdend", "blue hold end");
-        AddAnimationFromPrefix("purpleholdend", "pruple hold end");
+        AddAnimationFromPrefix("purpleholdend", "pruple end hold");
 
-        AddAnimationFromPrefix("greenhold", "green hold");
-        AddAnimationFromPrefix("redhold", "red hold");
-        AddAnimationFromPrefix("bluehold", "blue hold");
-        AddAnimationFromPrefix("purplehold", "purple hold");
+        AddAnimationFromPrefix("greenhold", "green hold piece");
+        AddAnimationFromPrefix("redhold", "red hold piece");
+        AddAnimationFromPrefix("bluehold", "blue hold piece");
+        AddAnimationFromPrefix("purplehold", "purple hold piece");
 
         SetGraphicSize(Width*0.7f);
         UpdateHitbox();
@@ -131,6 +131,51 @@ class Note : Sprite {
 
         CenterOffsets();
         CenterOrigin();
+
+        if (isSustainNote && prevNote != null) {
+            Alpha = 0.6f;
+
+            Position.X += Width/2;
+
+            switch (noteData) {
+                case 2:
+                    PlayAnimation("greenholdend");
+                    break;
+                case 3:
+                    PlayAnimation("redholdend");
+                    break;
+                case 1:
+                    PlayAnimation("blueholdend");
+                    break;
+                case 0:
+                    PlayAnimation("purpleholdend");
+                    break;
+            }
+
+            UpdateHitbox();
+
+            Position.X -= Width/2;
+
+            if (prevNote.isSustainNote) {
+                switch (prevNote.noteData) {
+                    case 0:
+                        prevNote.PlayAnimation("purplehold");
+                        break;
+                    case 1:
+                        prevNote.PlayAnimation("bluehold");
+                        break;
+                    case 2:
+                        prevNote.PlayAnimation("greenhold");
+                        break;
+                    case 3:
+                        prevNote.PlayAnimation("redhold");
+                        break;
+                }
+                prevNote.Scale.Y *= (float)(Conductor.stepCrochet / 100 * 1.5 * speed);
+                prevNote.UpdateHitbox();
+            }
+            
+        }
     }
 
     public override void Update(GameTime gameTime)

@@ -23,8 +23,8 @@ public class PlayState : State {
     private Group _enemyStrums;
     private Group _strumGroup;
     private int[] pressArray = new int[4];
-    private SwagSong SONG;
     private Group notes;
+    private Group sustainNotes;
     private List<Note> unspawnNotes = new List<Note>();
 
     private Song Inst;
@@ -33,6 +33,9 @@ public class PlayState : State {
     private Keys[] inputList = { Keys.D, Keys.F, Keys.J, Keys.K };
     private float spawnTime = 2000;
     private bool generatedMusic = false;
+
+    private SwagSong SONG;
+
     public PlayState(Game1 game, GraphicsDevice graphicsDevice, ContentManager content) : base(game, graphicsDevice, content)
     {
         _playerStrums = new Group();
@@ -79,6 +82,7 @@ public class PlayState : State {
         string curSong = songData.song;
 
         notes = new Group();
+        sustainNotes = new Group();
         Add(notes);
 
         SwagSection[] noteData = songData.notes;
@@ -102,13 +106,24 @@ public class PlayState : State {
                 if (unspawnNotes.Count > 0)
                     oldNote = unspawnNotes[0];
 
-                Note swagNote = new Note(daStrumTime, daNoteData%4, oldNote, false, false, null, _game);
+                Note swagNote = new Note(daStrumTime, daNoteData%4, oldNote, false, false, null, _game, SONG.speed);
                 swagNote.sustainLength = songNotes[2].GetSingle();
-                //swagNote.altNote = songNotes[3];
                 swagNote.ScrollFactor = Vector2.Zero;
                 swagNote.mustPress = gottaHitNote;
-
                 unspawnNotes.Add(swagNote);
+
+                int susLength = (int)(swagNote.sustainLength / Conductor.stepCrochet);
+                for (int susNote = -1; susNote < (int)susLength-1; susNote++)
+                {
+                    oldNote = unspawnNotes[unspawnNotes.Count - 1];
+
+                    Note sustainNote = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet, daNoteData%4, oldNote, true, false, null, _game, SONG.speed);
+                    sustainNote.ScrollFactor = Vector2.Zero;
+                    unspawnNotes.Add(sustainNote);
+                    sustainNote.mustPress = gottaHitNote;
+
+                    if (swagNote.mustPress) sustainNote.Position.X += 1280 / 2;
+                }
 
                 if (swagNote.mustPress) swagNote.Position.X += 1280 / 2;
             }
@@ -154,28 +169,24 @@ public class PlayState : State {
         if (generatedMusic) Conductor.songPosition += 1000 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         float fakeCrochet = (60 / SONG.bpm) * 1000;
-        /* foreach(Note note in notes.Members) {
-            
-            note.Position.Y = 42 - ((Conductor.songPosition-450) - note.strumTime) * (0.45f * SONG.speed);
-            //Debug.WriteLine("note.Position.Y: " + note.Position.Y);
-            // if past safe zone, remove note
-            if (note.strumTime - (Conductor.songPosition-450) < -Conductor.safeZoneOffset * 2) {
-                notes.Remove(note);
-                StrumNote strum = null;
-                if (note.mustPress) strum = _playerStrums.Get(note.noteData);
-                else strum = _enemyStrums.Get(note.noteData);
-                note.Destroy();
-            }
-        } */
 
         for (int i = 0; i < notes.Members.Count; i++) {
+            int strumLineMid = 84 + (int)(Note.swagWidth/2);
             Note note = notes.Get(i);
             note.Position.Y = 84 - ((Conductor.songPosition-450) - note.strumTime) * (0.45f * SONG.speed);
+            if (note.isSustainNote 
+                && (!note.mustPress || (note.wasGoodHit || (note.prevNote.wasGoodHit && !note.canBeHit)))
+                && note.Position.Y + note.Offset.Y <= strumLineMid) {
+                    // change note.Scale.y based on distance from strumLineMid
+                    int noteHeight = note.GetFrameHeight();
+                    
+                }
             //Debug.WriteLine("note.Position.Y: " + note.Position.Y);
             // if past safe zone, remove note
             if (note.strumTime - (Conductor.songPosition-450) < -Conductor.safeZoneOffset * 2) {
                 notes.Remove(note);
                 if (!note.mustPress) _enemyStrums.Get(note.noteData).PlayAnim("confirm");
+                else _playerStrums.Get(note.noteData).PlayAnim("confirm");
                 note.Destroy();
             }
         }
@@ -190,7 +201,8 @@ public class PlayState : State {
             while (unspawnNotes.Count > 0 && unspawnNotes[0].strumTime - (Conductor.songPosition-450) < time) {
                 Note note = unspawnNotes[0];
                 unspawnNotes.RemoveAt(0);
-                notes.Add(note);
+                if (note.isSustainNote) notes.Add(note, 0);
+                else notes.Add(note);
             }
         }
     }
